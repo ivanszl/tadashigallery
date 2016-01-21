@@ -1,0 +1,2 @@
+# tadashigallery
+Tadashi Gallery简称为TG，TG是一个类似于淘宝图片管理系统的简单版，便于将图片按文件夹进行分类管理，方便图片进行多次利用展示。
