@@ -1,0 +1,117 @@
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="renderer" content="webkit" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>塔达西图库管理</title>
+    <link href="css/style.css" rel="stylesheet" />
+</head>
+<body>
+	<div class="wrap">
+		<div class="page-tuku">
+			<div class="left-pannel">
+				<div class="tree-container">
+					<h2 class="head">图片目录</h2>
+					<div id="J_MainTreeRoom" class="treeRoom">
+						<ul id="J_MainTree" class="ztree"></ul>
+					</div>
+				</div>
+			</div>
+			<div class="main-pannel">
+				<div class="all-control-bar">
+					<ol class="col-xs-8 breadcrumb" id="J_Crumbs"><li><i class="icon icon-pic"></i> 我的图片</li></ol>
+					<div class="control">
+						<div class="control-buttons">
+							<button class="btn btn-info" data-toggle="modal" data-target="#uploaderModal">
+								<i class="icon icon-upload"></i>
+								上传图片
+							</button>
+							<button class="btn btn-default" data-toggle="modal" data-target="#folderModal">
+								<i class="icon icon-folderadd"></i>
+								新建文件夹
+							</button>
+						</div>
+						<div class="search" id="J_SearForm">
+							<div class="search-form">
+								<input type="text" class="form-control search-input" placeholder="按文件夹名称/图片名称搜索">
+								<button type="button" class="search-btn"><i class="icon icon-search"></i></button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="pic-container" id="J_PicContainer"><div id="J_Picture"></div></div>
+				<div class="page-footer" id="J_PageFooter"></div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="uploaderModal" tabindex="-1" role="dialog" aria-labelledby="uploaderModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="uploaderModalLabel">上传文件</h4>
+            </div>
+            <div class="modal-body">
+                <div id="webUploader">
+                    <div class="queueList">
+                        <div class="placeholder">
+                            <div id="filePicker"></div>
+                            <p>或将照片拖到这里，单次最多可选300张</p>
+                        </div>
+                    </div>
+                    <div class="statusBar">
+                        <div class="progress">
+                            <span class="text">0%</span>
+                            <span class="percentage"></span>
+                        </div><div class="info"></div>
+                        <div class="btns">
+                            <div id="filePicker2"></div><div class="uploadBtn">开始上传</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="folderModal" tabindex="-1" role="dialog" aria-labelledby="folderModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="folderModalLabel">新建文件夹</h4>
+                <div class="modal-subTitle">请输入文件夹名称</div>
+            </div>
+            <div class="modal-body">
+                <div class="new-folder"><input type="text" class="form-control" id="J_NewFoldername" tabindex="1" placeholder="新建文件夹"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" id="J_NewFolderSubmit" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="js/sea.js"></script>
+<script type="text/javascript">
+seajs.config({
+    base : './js',
+    alias: {
+        'jquery' : "modules/jquery.min.js",
+        'common' : "common.js",
+        'ztree'  : 'modules/ztree/3.5/jquery.ztree.core.min.js',
+        'ztree.exedit' : 'modules/ztree/3.5/jquery.ztree.exedit.min.js',
+        'modal'  : 'modules/bootstrap.Modal.js',
+        'tips'   : 'modules/tadashi/Tips.js',
+        'json'   : 'modules/json2.js',
+        'route'  : 'modules/tadashi/Route.js',
+        'webuploader': 'modules/WebUploader.min.js',
+        'zeroClipboard': 'modules/ZeroClipboard/2.3.0/ZeroClipboard.min.js'
+    }
+});
+seajs.use("app/index/main");
+</script>
+</body>
+</html>
