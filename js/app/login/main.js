@@ -7,7 +7,7 @@ define('app/login/main', ['jquery', 'md5', 'common'], function(require){
 		formhash = common.getCookie('formhash'),
 		param = '',
 		data = {},
-		username = common.storeGet('tadashi_username';
+		username = common.storeGet('tadashi_username');
 	if (username) {
 		form.find('input[name=uname]').val(username);
 	}
