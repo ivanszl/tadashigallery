@@ -97,7 +97,7 @@ total = total + res[1].c
 
 
 if offset > 0 then
-	res, err, errno, sqlstate = db:query(string.format("SELECT COUNT(*) AS c FROM folders WHERE parent_id=%s ORDER BY created_at ASC LIMIT 0, %d", ngx.quote_sql_str(folder_id), (offset - 1) * 40))
+	res, err, errno, sqlstate = db:query(string.format("SELECT COUNT(*) AS c FROM folders WHERE parent_id=%s", ngx.quote_sql_str(folder_id)))
 	if not res then
 		result.success = false
 		result.errorMessage = err
