@@ -68,6 +68,51 @@ define('app/index/show', ['jquery', 'common', 'tips', 'zeroClipboard', 'route'],
 		gotoFolder = function(id){
 			$('#J_Crumbs').trigger('change.tadashi.folder', [id]);
 		},
+		listData = function(json) {
+			for(var i = 0, n = json.data.length; i < n; i++)
+			{
+				var data = json.data[i];
+				if (data.is_folder == 0) {
+					data.url = encodeURIComponent(common.imageHost + data.path + '.' + data.ext);
+					html += tpl.jstpl_format(data);
+				} else {
+					html += folderTpl.jstpl_format(data);
+				}
+			}
+			var h = $(html), elems = h.find('.handle li.clipboard'), lis = h.find('.handle li'), folder = h.find('.folder');
+			$('#J_Picture').html('').append(h);
+			elems.on('mouseover.tadashi.tuku', function(){
+				$(this).parents('.item').addClass('on');
+			}).on('mouseout.tadashi.tuku', function(e){
+				$(this).parents('.item').removeClass('on');
+				e.stopPropagation();
+			});
+			folder.on('click', function(){
+				Route.go('go/' + $(this).data('val') + '/1');
+			});
+			lis.on('click', function(){
+				var that = $(this), id = that.attr('data-val');
+				if (that.hasClass('delete')) {
+					$.getJSON(common.delFileUri, {id: id}, function(json){
+						if (json.success) {
+							tipObj.show("删除成功");
+							that.parents('.item').remove();
+						} else {
+							tipObj.show(json.errorMessage, true, true);
+						}
+					});
+				}
+			});
+			zeroClipboard && zeroClipboard.destroy();
+			zeroClipboard = new ZeroClipboard(elems);
+			zeroClipboard.on('ready', function() {
+				zeroClipboard.on("copy", function(e) {
+					e.clipboardData.setData('text/plain', decodeURIComponent(e.client.getData()['text/plain']));
+					tipObj.show('复制成功');
+					$(document).trigger('click');
+				});
+			});
+		},
 		listPicture = function(id, page, callback) {
 			gotoFolder(id);
 			tipObj.show('<i class="icon icon-loading icon-spin"></i>正在加载数据...', false);
@@ -82,49 +127,7 @@ define('app/index/show', ['jquery', 'common', 'tips', 'zeroClipboard', 'route'],
 					if (typeof callback == 'function') {
 						callback.apply(json.data);
 					}
-					for(var i = 0, n = json.data.length; i < n; i++)
-					{
-						var data = json.data[i];
-						if (data.is_folder == 0) {
-							data.url = encodeURIComponent(common.imageHost + data.path + '.' + data.ext);
-							html += tpl.jstpl_format(data);
-						} else {
-							html += folderTpl.jstpl_format(data);
-						}
-					}
-					var h = $(html), elems = h.find('.handle li.clipboard'), lis = h.find('.handle li'), folder = h.find('.folder');
-					$('#J_Picture').html('').append(h);
-					elems.on('mouseover.tadashi.tuku', function(){
-						$(this).parents('.item').addClass('on');
-					}).on('mouseout.tadashi.tuku', function(e){
-						$(this).parents('.item').removeClass('on');
-						e.stopPropagation();
-					});
-					folder.on('click', function(){
-						Route.go('go/' + $(this).data('val') + '/1');
-					});
-					lis.on('click', function(){
-						var that = $(this), id = that.attr('data-val');
-						if (that.hasClass('delete')) {
-							$.getJSON(common.delFileUri, {id: id}, function(json){
-								if (json.success) {
-									tipObj.show("删除成功");
-									that.parents('.item').remove();
-								} else {
-									tipObj.show(json.errorMessage, true, true);
-								}
-							});
-						}
-					});
-					zeroClipboard && zeroClipboard.destroy();
-					zeroClipboard = new ZeroClipboard(elems);
-					zeroClipboard.on('ready', function() {
-						zeroClipboard.on("copy", function(e) {
-							e.clipboardData.setData('text/plain', decodeURIComponent(e.client.getData()['text/plain']));
-							tipObj.show('复制成功');
-							$(document).trigger('click');
-						});
-					});
+					listData(json);
 					renderPagination(id, page, json.total, json.size, 'go');
 				} else {
 
@@ -145,42 +148,7 @@ define('app/index/show', ['jquery', 'common', 'tips', 'zeroClipboard', 'route'],
 				if (json.success) {
 					var html = '';
 					tipObj.hide();
-					for(var i = 0, n = json.data.length; i < n; i++)
-					{
-						var data = json.data[i];
-						data.url = encodeURIComponent(common.imageHost + data.path + '.' + data.ext);
-						html += tpl.jstpl_format(data);
-					}
-					var h = $(html), elems = h.find('.handle li.clipboard'), lis = h.find('.handle li');
-					$('#J_Picture').html('').append(h);
-					elems.on('mouseover.tadashi.tuku', function(){
-						$(this).parents('.item').addClass('on');
-					}).on('mouseout.tadashi.tuku', function(e){
-						$(this).parents('.item').removeClass('on');
-						e.stopPropagation();
-					});
-					lis.on('click', function(){
-						var that = $(this), id = that.attr('data-val');
-						if (that.hasClass('delete')) {
-							$.getJSON(common.delFileUri, {id: id}, function(json){
-								if (json.success) {
-									tipObj.show("删除成功");
-									that.parents('.item').remove();
-								} else {
-									tipObj.show(json.errorMessage, true, true);
-								}
-							});
-						}
-					});
-					zeroClipboard && zeroClipboard.destroy();
-					zeroClipboard = new ZeroClipboard(elems);
-					zeroClipboard.on('ready', function() {
-						zeroClipboard.on("copy", function(e) {
-							e.clipboardData.setData('text/plain', decodeURIComponent(e.client.getData()['text/plain']));
-							tipObj.show('复制成功');
-							$(document).trigger('click');
-						});
-					});
+					listData(json);
 					renderPagination(key, page, json.total, json.size, 'search');
 				} else {
 					tipObj.show(json.errorMessage);
