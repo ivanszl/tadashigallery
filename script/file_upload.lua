@@ -8,7 +8,7 @@ end
 local upload = require "resty.upload"
 local resty_md5 = require "resty.md5"
 local str = require "resty.string"
-local save_path = "/var/www/images"
+local save_path = TUKU.save_path
 local chunk_size = 4096
 local form, err = upload:new(chun_size)
 if not form then
