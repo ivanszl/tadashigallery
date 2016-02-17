@@ -8,5 +8,6 @@ MYSQL = {
 
 TUKU = {
 	user = 'tadashi',
-	password = 'tuku123456'
+	password = 'tuku123456',
+	save_path = '/var/www/images'
 }
