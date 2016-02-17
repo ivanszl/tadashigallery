@@ -1,7 +1,7 @@
 CREATE TABLE `folders` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `folder_name` varchar(30) NOT NULL,
-  `parent_id` mediumint(6) unsigned NOT NULL,
+  `parent_id` mediumint(8) unsigned NOT NULL,
   `created_at` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
   KEY `parent_id` (`parent_id`),
@@ -20,10 +20,12 @@ CREATE TABLE `files` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `folder_files` (
-  `folder_id` mediumint(6) unsigned NOT NULL,
+  `folder_id` mediumint(8) unsigned NOT NULL,
   `file_id` char(32) NOT NULL,
   PRIMARY KEY (`folder_id`,`file_id`),
   KEY `file_fk` (`file_id`),
-  CONSTRAINT `file_fk` FOREIGN KEY (`file_id`) REFERENCES `t_files` (`file_id`) ON DELETE CASCADE ON UPDATE NO ACTION,
-  CONSTRAINT `folder_fk` FOREIGN KEY (`folder_id`) REFERENCES `t_folders` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
+  CONSTRAINT `file_fk` FOREIGN KEY (`file_id`) REFERENCES `files` (`file_id`) ON DELETE CASCADE ON UPDATE NO ACTION,
+  CONSTRAINT `folder_fk` FOREIGN KEY (`folder_id`) REFERENCES `folders` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO folders(id,folder_name,parent_id,created_at) VALUES(0,'我的图库',0,unix_timestamp(now()))；
