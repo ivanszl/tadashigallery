@@ -20,7 +20,7 @@ if res and res.status == ngx.HTTP_OK then
 		res = ngx.location.capture("/tuku_mysql", {args = { sql = string.format("DELETE FROM files WHERE file_id=%s", ngx.quote_sql_str(file_id) ) } } )
 		if res and res.status == ngx.HTTP_OK then
 			os.remove(save_path .. d[1].file_path)
-			ngx.print([[{"success": true, "data": {"uri": "]] .. d[1].file_path .. [["}]])
+			ngx.print([[{"success": true, "data": {"uri": "]] .. d[1].file_path .. [["}}]])
 		else
 			ngx.print([[{"success": false, "errorMessage": "\u670d\u52a1\u5668\u5f00\u5c0f\u5dee\u4e86"}]])
 		end
