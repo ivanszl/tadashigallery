@@ -135,7 +135,6 @@ define('app/index/main', ['jquery', 'modal', 'route', './uploader', 'common', '.
 		}
 		while (node.id != 0) {
 			node = tree.getNodesByParam("id", node.parent_id, null)[0];
-			console.log(node)
 			if (node) {
 				if (node.id == 0) {
 					lis.push('<li><i class="icon icon-pic"></i> <a href="#!go/' + node.id + '/1">' + node.name + '</a></li>');
@@ -169,7 +168,7 @@ define('app/index/main', ['jquery', 'modal', 'route', './uploader', 'common', '.
 	}
 	Route.add('index', function(){
 		initFinished = true;
-		var f = function() {loadedTree?show.list(0, 1, function(){ expandNode(0) }):setTimeout(f, 150)};
+		var f = function() {loadedTree?show.list(0, 1, function(){ expandNode(0)}):setTimeout(f, 150)};
 		setTimeout(f, 150);
 	});
 	Route.add(/go\/(\d+)\/(\d+)/i, function(id, page){

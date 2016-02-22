@@ -70,6 +70,91 @@ define("app/index/uploader", ["jquery", "webuploader", "common"], function(requi
 
 	module.exports = Uploader;
 
+	Uploader.prototype._initUploader = function(){
+		this.uploader = WebUploader.create({
+			pick: {
+				id: '#filePicker',
+				label: '点击选择图片'
+			},
+			dnd: '#webUploader .queueList',
+			paste: document.body,
+			accept: {
+				title      : this.options.title,
+				extensions : this.options.extenstions,
+				mimeTypes  : this.options.mimeTypes
+			},
+			swf: this.options.swf,
+			disableGlobalDnd: true,
+			chunked: true,
+			formData: {},
+			server: this.options.server,
+			fileNumLimit: this.options.fileNumLimit,
+			fileSizeLimit: this.options.fileSizeLimit,
+			fileSingleSizeLimit: this.options.fileSingleSizeLimit
+		});
+		// 加"添加文件"的按钮
+		this.uploader.addButton({
+			id: '#filePicker2',
+			label: '继续添加'
+		});
+
+		var that = this;
+		// 头部添加SESSION信息
+		this.uploader.on('uploadBeforeSend', function(object, data, headers){
+			headers['X-Tadashi-Session'] = that.session;
+			data['f'] = that.albumId;
+		});
+
+		this.uploader.onUploadProgress = function (file, percentage) {
+			var $li = $('#' + file.id),
+				$percent = $li.find('.progress span');
+			$percent.css('width', percentage * 100 + '%');
+			percentages[file.id][1] = percentage;
+			that.updateTotalProgress();
+		};
+		this.uploader.onFileQueued = function (file) {
+			fileCount++;
+			fileSize += file.size;
+			if (fileCount === 1) {
+				that.$placeHolder.addClass('element-invisible');
+				that.$statusBar.show();
+			}
+
+			that.addFile(file);
+			that.setState('ready');
+			that.updateTotalProgress();
+		};
+		this.uploader.onFileDequeued = function (file) {
+			fileCount--;
+			fileSize -= file.size;
+
+			if (!fileCount) {
+				that.setState('pedding');
+			}
+			that.removeFile(file);
+			that.updateTotalProgress();
+		};
+		this.uploader.onError = function (code) {
+			alert('Eroor: ' + code);
+		};
+		this.uploader.onUploadSuccess = function(file, response) {
+			that.uploadSuccess(response);
+		};
+		this.uploader.on('all', function (type, file, response) {
+			switch (type) {
+				case 'uploadFinished':
+					that.setState('confirm');
+				break;
+				case 'startUpload':
+					that.setState('uploading');
+				break;
+				case 'stopUpload':
+					that.setState('paused');
+				break;
+			}
+		});
+	};
+
 	Uploader.prototype.addFile = function(file) {
 		var $li = $( '<li id="' + file.id + '">' + '<p class="title">' + file.name + '</p>' + '<p class="imgWrap"></p>'+ '<p class="progress"><span></span></p>' + '</li>' ),
 			$btns = $('<div class="file-panel">' +'<span class="icon icon-trash"></span>' + '<span class="icon icon-refresh"></span>' + '<span class="icon undo icon-refresh"></span></div>').appendTo( $li ),
@@ -256,93 +341,24 @@ define("app/index/uploader", ["jquery", "webuploader", "common"], function(requi
 		}
 	};
 
+	Uploader.prototype.destroy = function(){
+		if (!this.uploader) {
+			this._initUploader();
+		}
+		this.uploader.reset();
+		this.$upload.removeClass('disabled').addClass('state-ready');
+		this.$placeHolder.removeClass('element-invisible');
+		this.$wrap.find('.queueList').removeClass('filled');
+		fileCount = 0;
+		fileSize = 0;
+		this.$queue.html('');
+	};
+
 	Uploader.prototype.build = function(albumId, albumName, session) {
-		if (this.uploader) {
-			this.uploader.destroy();
-			delete this.uploader;
-		}
 		this.albumName = albumName;
-		this.uploader = WebUploader.create({
-			pick: {
-				id: '#filePicker',
-				label: '点击选择图片'
-			},
-			dnd: '#webUploader .queueList',
-			paste: document.body,
-			accept: {
-				title      : this.options.title,
-				extensions : this.options.extenstions,
-				mimeTypes  : this.options.mimeTypes
-			},
-			swf: this.options.swf,
-			disableGlobalDnd: true,
-			chunked: true,
-			formData: {folder_id: albumId},
-			server: this.options.server,
-			fileNumLimit: this.options.fileNumLimit,
-			fileSizeLimit: this.options.fileSizeLimit,
-			fileSingleSizeLimit: this.options.fileSingleSizeLimit
-		});
-		// 头部添加SESSION信息
-		if (session) {
-			this.uploader.on('uploadBeforeSend', function(object, data, headers){
-				headers['X-Tadashi-Session'] = session;
-			});
-		}
-		// 加"添加文件"的按钮
-		this.uploader.addButton({
-			id: '#filePicker2',
-			label: '继续添加'
-		});
-		var that = this;
-		this.uploader.onUploadProgress = function (file, percentage) {
-			var $li = $('#' + file.id),
-				$percent = $li.find('.progress span');
-			$percent.css('width', percentage * 100 + '%');
-			percentages[file.id][1] = percentage;
-			that.updateTotalProgress();
-		};
-		this.uploader.onFileQueued = function (file) {
-			fileCount++;
-			fileSize += file.size;
-			if (fileCount === 1) {
-				that.$placeHolder.addClass('element-invisible');
-				that.$statusBar.show();
-			}
-
-			that.addFile(file);
-			that.setState('ready');
-			that.updateTotalProgress();
-		};
-		this.uploader.onFileDequeued = function (file) {
-			fileCount--;
-			fileSize -= file.size;
-
-			if (!fileCount) {
-				that.setState('pedding');
-			}
-			that.removeFile(file);
-			that.updateTotalProgress();
-		};
-		this.uploader.onError = function (code) {
-			alert('Eroor: ' + code);
-		};
-		this.uploader.onUploadSuccess = function(file, response) {
-			that.uploadSuccess(response);
-		};
-		this.uploader.on('all', function (type, file, response) {
-			switch (type) {
-				case 'uploadFinished':
-					that.setState('confirm');
-				break;
-				case 'startUpload':
-					that.setState('uploading');
-				break;
-				case 'stopUpload':
-					that.setState('paused');
-				break;
-			}
-		});
+		this.albumId = albumId;
+		this.session = session;
+		this._initUploader();
 		this.updateTotalProgress();
 	};
 });
