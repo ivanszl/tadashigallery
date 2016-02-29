@@ -1,9 +1,3 @@
-
-if ngx.var.raw ~= 'tadashi:tuku' then
-	ngx.header['X-Redirect'] = 'login.html'
-	return ngx.eof()
-end
-
 local folder_id = ngx.var.arg_folder_id or (ngx.var.arg_id or 0)
 local offset = tonumber(ngx.var.arg_offset or 0)
 local query_type = ngx.var.arg_type or 'folder'

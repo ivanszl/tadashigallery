@@ -1,9 +1,4 @@
 ngx.header['content-type'] = 'application/json'
-if ngx.var.raw ~= 'tadashi:tuku' then
-	ngx.header['X-Redirect'] = 'login.html'
-	ngx.print([[{"success": false, "errorMessage": "\u8bf7\u9009\u62e9\u8981\u4e0a\u4f20\u7684\u6587\u4ef6", "isLogin": false}]])
-	return ngx.eof()
-end
 
 local upload = require "resty.upload"
 local resty_md5 = require "resty.md5"

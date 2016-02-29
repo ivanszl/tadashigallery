@@ -28,6 +28,7 @@ define('app/login/main', ['jquery', 'md5', 'common'], function(require){
 					common.storeSave('tadashi_username', data.uname);
 				}
 				common.storeSave('tadashi_session', json.session);
+				common.setCookie('tg_auth_key', json.session, 24 * 3600);
 				window.location = 'index.html';
 			} else {
 

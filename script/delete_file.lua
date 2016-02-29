@@ -1,8 +1,3 @@
-if ngx.var.raw ~= 'tadashi:tuku' then
-	ngx.header['X-Redirect'] = 'login.html'
-	return ngx.eof()
-end
-
 local file_id = ngx.var.arg_id or ''
 local save_path = TUKU.save_path
 

@@ -1,9 +1,3 @@
-
-if ngx.var.raw ~= 'tadashi:tuku' then
-	ngx.header['X-Redirect'] = 'login.html'
-	return ngx.eof()
-end
-
 ngx.header['content-type'] = 'application/json'
 ngx.req.read_body()
 local cjson = require 'cjson'
