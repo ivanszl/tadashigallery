@@ -126,7 +126,7 @@ define('app/index/show', ['jquery', 'common', 'tips', 'zeroClipboard', 'route'],
 				if (json.success) {
 					var html = '';
 					tipObj.hide();
-					listData(json);
+					listData(json.data);
 					renderPagination(key, page, json.total, json.size, 'search');
 				} else {
 					tipObj.show(json.errorMessage);
