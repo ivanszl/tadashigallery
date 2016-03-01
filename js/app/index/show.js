@@ -5,7 +5,7 @@ define('app/index/show', ['jquery', 'common', 'tips', 'zeroClipboard', 'route'],
 		ZeroClipboard = require('zeroClipboard'),
 		tpl = [
 			'<div class="item">',
-			'<div class="image">',
+			'<div class="image" data-val="%{id}">',
 			'<div class="base-msg">',
 			'<div class="img-container"><img src="',
 			common.imageHost,
@@ -68,11 +68,11 @@ define('app/index/show', ['jquery', 'common', 'tips', 'zeroClipboard', 'route'],
 		gotoFolder = function(id){
 			$('#J_Crumbs').trigger('change.tadashi.folder', [id]);
 		},
-		listData = function(json) {
+		listData = function(items) {
 			var html = "";
-			for(var i = 0, n = json.data.length; i < n; i++)
+			for(var i = 0, n = items.length; i < n; i++)
 			{
-				var data = json.data[i];
+				var data = items[i];
 				if (data.is_folder == 0) {
 					data.url = encodeURIComponent(common.imageHost + data.path + '.' + data.ext);
 					html += tpl.jstpl_format(data);
@@ -80,32 +80,9 @@ define('app/index/show', ['jquery', 'common', 'tips', 'zeroClipboard', 'route'],
 					html += folderTpl.jstpl_format(data);
 				}
 			}
-			var h = $(html), elems = h.find('.handle li.clipboard'), lis = h.find('.handle li'), folder = h.find('.folder');
-			$('#J_Picture').html('').append(h);
-			elems.on('mouseover.tadashi.tuku', function(){
-				$(this).parents('.item').addClass('on');
-			}).on('mouseout.tadashi.tuku', function(e){
-				$(this).parents('.item').removeClass('on');
-				e.stopPropagation();
-			});
-			folder.on('click', function(){
-				Route.go('go/' + $(this).data('val') + '/1');
-			});
-			lis.on('click', function(){
-				var that = $(this), id = that.attr('data-val');
-				if (that.hasClass('delete')) {
-					$.getJSON(common.delFileUri, {id: id}, function(json){
-						if (json.success) {
-							tipObj.show("删除成功");
-							that.parents('.item').remove();
-						} else {
-							tipObj.show(json.errorMessage, true, true);
-						}
-					});
-				}
-			});
+			$('#J_Picture').html(html);
 			zeroClipboard && zeroClipboard.destroy();
-			zeroClipboard = new ZeroClipboard(elems);
+			zeroClipboard = new ZeroClipboard($('#J_Picture .handle li.clipboard'));
 			zeroClipboard.on('ready', function() {
 				zeroClipboard.on("copy", function(e) {
 					e.clipboardData.setData('text/plain', decodeURIComponent(e.client.getData()['text/plain']));
@@ -128,7 +105,7 @@ define('app/index/show', ['jquery', 'common', 'tips', 'zeroClipboard', 'route'],
 					if (typeof callback == 'function') {
 						callback.apply(json);
 					}
-					listData(json);
+					listData(json.data);
 					renderPagination(id, page, json.total, json.size, 'go');
 				} else {
 
@@ -159,7 +136,74 @@ define('app/index/show', ['jquery', 'common', 'tips', 'zeroClipboard', 'route'],
 				tipObj.show('请求出错');
 			});
 
+		},
+		bindEvent = function(){
+			$(document).on('click', '.folder-name', function(e){
+				var that = $(this),
+					input = that.siblings('input'),
+					old = input.val(),
+					val = '',
+					id = that.parents('.folder').data('val');
+
+				input.css('display', 'block').trigger('focus');
+				input.on('blur', function(){
+					val = $.trim(input.val()),
+					old !== val?(tipObj.show('<i class="icon icon-loading icon-spin"></i>正在提交数据...', false),$.ajax({
+							dataType: 'json',
+							url: common.renameUri,
+							type:"POST",
+							data: {type:'folder', name: $.trim(input.val()), id:id}
+						}).done(function(json){
+							json.success?(tipObj.hide(),that.text(val).attr('title', val),input.css('display', 'none')):tipObj.show(json.errorMessage);
+						}).fail(function(){
+							tipObj.hide();
+							tipObj.show('请求出错');
+						})):(input.off('blur'),input.css('display', 'none'));
+				});
+				e.stopPropagation();
+			}).on('click', '.img-name', function(e){
+				e.stopPropagation();
+				var that = $(this),
+					input = that.siblings('input'),
+					old = input.val(),
+					val = '',
+					id = that.parents('.image').data('val');
+				input.css('display', 'block').trigger('focus');
+				input.on('blur', function(){
+					val = $.trim(input.val()),
+					old !== val?(tipObj.show('<i class="icon icon-loading icon-spin"></i>正在提交数据...', false),$.ajax({
+							dataType: 'json',
+							url: common.renameUri,
+							type:"POST",
+							data: {type:'file', name: $.trim(input.val()), id:id}
+						}).done(function(json){
+							json.success?(tipObj.hide(),that.text(val).attr('title', val),input.css('display', 'none')):tipObj.show(json.errorMessage);
+						}).fail(function(){
+							tipObj.hide();
+							tipObj.show('请求出错');
+						})):(input.off('blur'),input.css('display', 'none'));
+				});
+
+			}).on('dblclick', '.folder', function(){
+				Route.go('go/' + $(this).data('val') + '/1');
+			}).on('mouseover.tadashi.tuku', '.handle li.clipboard', function(){
+				$(this).parents('.item').addClass('on');
+			}).on('mouseout.tadashi.tuku', '.handle li.clipboard', function(e){
+				$(this).parents('.item').removeClass('on');
+				e.stopPropagation();
+			}).on('click', '.handle li.delete', function(){
+				var that = $(this), id = that.attr('data-val');
+				$.getJSON(common.delFileUri, {id: id}, function(json){
+					if (json.success) {
+						tipObj.show("删除成功");
+						that.parents('.item').remove();
+					} else {
+						tipObj.show(json.errorMessage, true, true);
+					}
+				});
+			});
 		};
+		bindEvent();
 		tipObj.init();
 		module.exports = {
 			name: 'show',

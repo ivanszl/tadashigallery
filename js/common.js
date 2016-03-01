@@ -29,6 +29,7 @@ define(function(require, exports, modules){
         addFolderUri : '/add_folder.html',
         uploadUri    : '/file_upload.html',
         delFileUri   : '/delete_file.html',
+        renameUri    : '/rename.html',
         imageHost    : 'http://images.linsongzheng.com',
         storeSave    : function(key, val) {
             if (window.localStorage) {

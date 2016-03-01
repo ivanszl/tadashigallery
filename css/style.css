@@ -134,6 +134,7 @@ body {
   color: #333333;
   background-color: #ffffff;
   min-width: 1024px;
+  line-height:20px;
 }
 *:focus,*:hover,*:active{outline:0}
 a {
@@ -815,6 +816,9 @@ button.btn:active {
     -ms-user-select: none;
     user-select: none;
 }
+.pic-container .folder {
+    position: relative;
+}
 .pic-container #J_Picture {
     height:100%;
     overflow: auto;
@@ -869,7 +873,6 @@ button.btn:active {
     position: absolute;
     bottom: -33px;
     padding: 0 4px;
-    line-height:1.2;
     height: 35px;
     color: #454545;
     width: 160px;
@@ -932,10 +935,10 @@ button.btn:active {
 .pic-container .folder input {
     display: none;
     position: absolute;
-    bottom: -11px;
-    left: 2px;
-    width: 136px;
-    height: 22px;
+    bottom: -10px;
+    left: 0px;
+    width: 160px;
+    height: 35px;
     text-align: center;
 }
 
@@ -1344,6 +1347,11 @@ button.btn:active {
 .tree-container {
     width: 100%;
     margin-top: 51px;
+    position:relative;
+}
+.tree-container .logo{
+  position:absolute;
+  top:-51px;
 }
 .tree-container .head {
     height: 50px;
