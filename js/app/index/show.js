@@ -69,6 +69,7 @@ define('app/index/show', ['jquery', 'common', 'tips', 'zeroClipboard', 'route'],
 			$('#J_Crumbs').trigger('change.tadashi.folder', [id]);
 		},
 		listData = function(json) {
+			var html = "";
 			for(var i = 0, n = json.data.length; i < n; i++)
 			{
 				var data = json.data[i];
