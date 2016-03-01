@@ -3,7 +3,7 @@ Tadashi Gallery简称为TG，TG是一个类似于淘宝图片管理系统的简�
 
 Version
 ======
-This document describes TG v0.9.8 released on 21 January 2016.
+This document describes TG v0.9.9 released on 21 January 2016.
 
 Install
 =======
@@ -33,6 +33,135 @@ $ git clone https://github.com/ivanszl/tadashigallery.git
 $ cd tadashigallery
 ```
 
+configure the nginx server
+```bash
+$ mkdir -p /etc/nginx/{vhost,backend}
+$ vim /etc/nginx/nginx.conf
+```
+nginx configure
+```bash
+user www;
+worker_processes 1;
+ 
+#error_log logs/error.log;
+#error_log logs/error.log notice;
+#error_log logs/error.log info;
+ 
+pid /var/run/nginx.pid;
+ 
+worker_rlimit_nofile 65535;
+events {
+    worker_connections 65535;
+    multi_accept on;
+}
+ 
+ 
+http {
+    include mime.types;
+    default_type application/octet-stream;
+ 
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"';
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+ 
+    keepalive_timeout 5;
+    client_header_timeout 10;
+    client_body_timeout 120;
+    reset_timedout_connection on;
+    send_timeout 3600;
+    gzip on;
+    gzip_min_length 1k;
+    gzip_buffers 4 64k;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+    gzip_vary on;
+ 
+    client_header_buffer_size 32k;
+    large_client_header_buffers 4 64k;
+    client_max_body_size 200m;
+ 
+    open_file_cache max=100000 inactive=20s;
+    open_file_cache_valid 30s;
+    open_file_cache_min_uses 2;
+    open_file_cache_errors on;
+ 
+    resolver 10.202.72.118 10.202.72.116;
+    lua_package_path '/opt/openresty/lualib/?.lua;;';
+    lua_package_cpath '/opt/openresty/lualib/?.so;;';
+    include conf/backend/*.enable;
+    include conf/vhost/*.enable;
+}
+```
+add vhost configure file
+```bash
+$ vim /etc/nginx/vhost/tuku.enable
+ 
+init_by_lua_file '/var/www/html/tadashigallery/script/init.lua';
+server {
+    listen 80;
+    server_name tuku.linsongzheng.com;
+    access_log logs/tuku.access.log main;
+    error_log logs/tuku.error.log;
+    root /var/www/html/tadashigallery;
+    index index.html;
+    location ~ ^/(query|add_folder|file_upload|delete_file|rename).html$ {
+        default_type applcation/json;
+        set $redirect_header 1;
+        access_by_lua_file /var/www/html/tadashigallery/script/auth_check.lua; 
+        content_by_lua_file /var/www/html/tadashigallery/script/$1.lua;
+    }
+    location /tuku/index.html {
+        access_by_lua_file /var/www/html/tadashigallery/script/auth_check.lua;
+        alias /var/www/html/tadashigallery/index.html;
+    }
+    location /login.html {
+        default_type text/html;
+        if ($request_method = POST) {
+            content_by_lua_file /var/www/html/tadashigallery/script/login.lua;
+        }
+        alias /var/www/html/tadashigallery/login.html;
+        if ($cookie_formhash = '') {
+            access_by_lua "
+                local ip = ngx.var.binary_remote_addr
+                local hash = ngx.md5(ip .. (ngx.time() / 7200))
+                ngx.header['Set-Cookie'] = {'formhash=' .. hash}
+            ";
+        }
+    }
+    encrypted_session_key "abcdefghijklmnopqrstuvwxyz123456";
+    encrypted_session_iv "abcdefok12345678";
+    encrypted_session_expires 1d;
+    location /tuku_mysql {
+        internal;
+        add_header Access-Control-Allow-Origin *;
+        set_unescape_uri $sql $arg_sql;
+        drizzle_pass tuku;
+        drizzle_module_header off;
+        drizzle_connect_timeout 500ms;
+        drizzle_send_query_timeout 2s;
+        drizzle_recv_cols_timeout 1s;
+        drizzle_recv_rows_timeout 1s;
+        drizzle_query $sql;
+        rds_json on;
+    }
+    location ~ \.(js|css)$ {
+        expires 30d;
+    }
+}
+```
+
+add drizzle backend configure file
+```bash
+$ vim /etc/nginx/backend/tuku.enable
+ 
+upstream tuku {
+    drizzle_server 127.0.0.1:3306 dbname=db_tuku password=123456 user=tuku protocol=mysql;
+}
+```
+
 configure the common.js
 ```javascript
 $ vim js/common.js
@@ -60,44 +189,47 @@ define(function(require, exports, modules){
  		}
 		return this.replace(/%\{([A-Za-z0-9_|.]+)\}/g, d);
 	};
-	modules.exports = {
-		queryUri : '/query.html', // 查询文件、文件夹、搜索接口
-		loginUri : '/login.html', // 登陆接口
-		addFolderUri : '/add_folder.html', // 添加文件夹接口
-		uploadUri : '/file_upload.html', // 文件上传接口
-		delFileUri : '/delete_file.html', // 删除文件接口
-		imageHost : 'http://images.linsongzheng.cn', // 图片访问域名 可以结合CDN来使用
-		storeSave : function(key, val) {
-			if (window.localStorage) {
-				localStorage[key] = val;
-			} else {
-				var exp = new Date();
-				exp.setTime(exp.getTime() + 365 * 24 * 60 * 60 * 1000);
-				document.cookie = key + "=" + escape(val) + ";expire=" + exp.toGMTString();
-			}
-		},
-		storeDelete : function(key) {
-			if (window.localStorage) {
-				localStorage.removeItem(key);
-			} else {
-				var exp = new Date();
-				exp.setTime(exp.getTime() - 1);
-				document.cookie = key + "=tadashi;expire=" + exp.toGMTString();
-			}
-		},
-		storeGet : function(key) {
-			if (window.localStorage) {
-				return localStorage.getItem(key);
-			} else {
-				var arr,reg=new RegExp("(^| )"+key+"=([^;]*)(;|$)");
-				return (arr=document.cookie.match(reg))?unescape(arr[2]):null;
-			}
-		},
-		getCookie : function(key) {
-			var arr,reg=new RegExp("(^| )"+key+"=([^;]*)(;|$)");
-			return (arr=document.cookie.match(reg))?unescape(arr[2]):null;
-		}
-	}
+	var common = {
+        queryUri     : '/query.html',
+        deleteUri    : '/delete.html',
+        loginUri     : '/login.html',
+        addFolderUri : '/add_folder.html',
+        uploadUri    : '/file_upload.html',
+        delFileUri   : '/delete_file.html',
+        renameUri    : '/rename.html',
+        imageHost    : 'http://images.linsongzheng.com',
+        storeSave    : function(key, val) {
+            if (window.localStorage) {
+                localStorage[key] = val;
+            } else {
+                common.setCookie(key, val, 365 * 24 * 3600);
+            }
+        },
+        storeDelete  : function(key) {
+            if (window.localStorage) {
+                localStorage.removeItem(key);
+            } else {
+                common.setCookie(key, 'tadashi', -1);
+            }
+        },
+        storeGet    : function(key) {
+            if (window.localStorage) {
+                return localStorage.getItem(key);
+            } else {
+                return common.getCookie(key);
+            }
+        },
+        setCookie  : function(key, val, expire) {
+            var exp = new Date();
+            exp.setTime(exp.getTime() + expire * 1000);
+            document.cookie = key + "=" + escape(val) + ";expire=" + exp.toGMTString();
+        },
+        getCookie  : function(key) {
+            var arr,reg=new RegExp("(^| )"+key+"=([^;]*)(;|$)");
+            return (arr=document.cookie.match(reg))?unescape(arr[2]):null;
+        }
+    };
+    modules.exports = common;
 });
 ```
 
