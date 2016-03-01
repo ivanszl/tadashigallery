@@ -135,5 +135,21 @@ end
 result.total = total
 result.size = 40
 
+local parent_id = tonumber(folder_id)
+result.level = {parent_id}
+
+while(parent_id > 0)
+	do
+	res, err, errno, sqlstate = db:query(string.format("SELECT parent_id FROM folders WHERE id=%d", parent_id))
+	if res then
+		if #res > 0 then
+			parent_id = tonumber(res[1].parent_id)
+			table.insert(result.level, parent_id)
+		end
+	else
+		parent_id = 0
+	end
+end
+
 ngx.print(cjson.encode(result))
 db:set_keepalive(10000, 100)

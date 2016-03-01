@@ -5,7 +5,6 @@ define('app/index/main', ['jquery', 'modal', 'route', './uploader', 'common', '.
 		show = require('./show'),
 		Route = require('route'),
 		Tips = require('tips'),
-		initFinished = false,
 		loadedTree = false,
 		setting = {
 			async: {
@@ -100,7 +99,7 @@ define('app/index/main', ['jquery', 'modal', 'route', './uploader', 'common', '.
 				if (!json.success) {
 					tipObj.show(json.errorMessage, true, true);
 				} else {
-					tree.addNodes(node, {isParent: !1,name: json.module.name,id: json.module.id, parent_id: json.module.parent_id});
+					tree.addNodes(node, {isParent: "true",name: json.module.name,id: json.module.id, parent_id: json.module.parent_id});
 					tipObj.hide();
 					modalFolder.modal('hide');
 				}
@@ -159,25 +158,32 @@ define('app/index/main', ['jquery', 'modal', 'route', './uploader', 'common', '.
 		}
 	});
 	
-	function expandNode(id) {
+	function expandNode(id, select) {
 		var node = tree.getNodesByParam("id", id, null)[0];
 		if (node) {
 			tree.expandNode(node, true);
-			tree.selectNode(node, false);
+			select && tree.selectNode(node, false);
 		}
 	}
 	Route.add('index', function(){
-		initFinished = true;
-		var f = function() {loadedTree?show.list(0, 1, function(){ expandNode(0)}):setTimeout(f, 150)};
+		var f = function() {
+			loadedTree ? show.list(0, 1, function(){
+				expandNode(0)
+			}) : setTimeout(f, 150);
+		};
 		setTimeout(f, 150);
 	});
 	Route.add(/go\/(\d+)\/(\d+)/i, function(id, page){
-		if (!initFinished) {
-			Route.go('index');
-			return;
-		}
-		expandNode(id);
-		show.list(id, page);
+		show.list(id, page,function(){
+			var that = this;
+			if (this.level.length>0){
+				var i = that.level.length - 1,
+					f = function() {
+						i >= 0?loadedTree ? (expandNode(that.level[i],false),i--,setTimeout(f,100)):setTimeout(f, 100):(expandNode(id, true),$('#J_Crumbs').trigger('change.tadashi.folder', [id]));
+					};
+				setTimeout(f, 100);
+			}
+		});
 	});
 	Route.add(/search\/(.*)\/(\d+)/i, function(key, page){
 		currentAlbumID = 0;
