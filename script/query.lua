@@ -28,7 +28,7 @@ if query_type == 'search' then
 	else
 		
 		local d = cjson.decode(res.body)
-		res = ngx.location.capture("/tuku_mysql", {args = { sql = string.format("SELECT file_id AS id, title, file_path AS path, file_ext AS ext, file_size AS size FROM files WHERE title LIKE %s ORDER BY created_at ASC LIMIT %d, 40", ngx.quote_sql_str('%' .. q .. '%'), offset * 40 )}})
+		res = ngx.location.capture("/tuku_mysql", {args = { sql = string.format("SELECT file_id AS id, title, file_path AS path, file_ext AS ext, file_size AS size, 0 AS is_folder FROM files WHERE title LIKE %s ORDER BY created_at ASC LIMIT %d, 40", ngx.quote_sql_str('%' .. q .. '%'), offset * 40 )}})
 		if res and res.status == ngx.HTTP_OK then
 			result.total = d[1].c
 			result.size = 40
