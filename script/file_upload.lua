@@ -110,7 +110,7 @@ while true do
 					ngx.time()
 				) } })
 			if not res and res.status ~= ngx.HTTP_OK then
-				ngx.print('{"success": false, "errorMessage": "\u670d\u52a1\u5668\u5f00\u5c0f\u5dee\u4e86"}')
+				ngx.print([[{"success": false, "errorMessage": "\u670d\u52a1\u5668\u5f00\u5c0f\u5dee\u4e86"}]])
 				return ngx.eof()
 			end
 			
