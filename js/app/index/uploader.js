@@ -86,6 +86,7 @@ define("app/index/uploader", ["jquery", "webuploader", "common"], function(requi
 			swf: this.options.swf,
 			disableGlobalDnd: true,
 			chunked: true,
+			compress: false,
 			formData: {},
 			server: this.options.server,
 			fileNumLimit: this.options.fileNumLimit,

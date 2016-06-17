@@ -29,3 +29,10 @@ CREATE TABLE `folder_files` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO folders(id,folder_name,parent_id,created_at) VALUES(0,'我的图库',0,unix_timestamp(now()))；
+
+CREATE TABLE `access_token` (
+  `access_key` CHAR(8) NOT NULL,
+  `access_secret` CHAR(32) NOT NULL,
+  `description` VARCHAR(255) DEFAULT '',
+  PRIMARY KEY (`access_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -131,6 +131,9 @@ server {
             ";
         }
     }
+    location =/auth {
+        content_by_lua_file /var/www/html/tadashigallery/script/auth.lua;
+    }
     encrypted_session_key "abcdefghijklmnopqrstuvwxyz123456";
     encrypted_session_iv "abcdefok12345678";
     encrypted_session_expires 1d;
@@ -249,6 +252,19 @@ TUKU = {
 }
 ```
 
+Auth
+====
+可以通过第三方应用登陆时授权，自动登陆本系统。
+只需要在第三方应用登陆后添加以下代码。
+```html
+<script type="text/javascript" src="http://tuku.linsongzheng.com/auth?key=$access_key&token=$token"></script>
+```
+在表`access_token` 中创建 access_key 和 access_secret 用于第三方登陆。
+token 的生成如下所示
+```php
+$time = $time();
+$token = md5(($time - $time % 300) . '|' . $access_secret);
+```
 Detail
 ======
 The detail infomation of this system can be obtained from the Tadashi Gallery introduce:
