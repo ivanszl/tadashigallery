@@ -56,7 +56,7 @@ local ok, err, errno, sqlstate = db:connect({
 	host = config.MYSQL.host,
 	port = config.MYSQL.port,
 	database = config.MYSQL.dbname,
-	user = config,MYSQL.user,
+	user = config.MYSQL.user,
 	password = config.MYSQL.pwd,
 	max_packet_size = 10485760
 	})
