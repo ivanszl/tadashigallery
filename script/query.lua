@@ -2,6 +2,7 @@ local folder_id = ngx.var.arg_folder_id or (ngx.var.arg_id or 0)
 local offset = tonumber(ngx.var.arg_offset or 0)
 local query_type = ngx.var.arg_type or 'folder'
 local q = ngx.unescape_uri(ngx.var.arg_q or '')
+local config = require 'config'
 
 offset = offset - 1
 
@@ -52,11 +53,11 @@ local mysql = require "resty.mysql"
 local db = mysql:new()
 db:set_timeout(1000)
 local ok, err, errno, sqlstate = db:connect({
-	host = MYSQL.host,
-	port = MYSQL.port,
-	database = MYSQL.dbname,
-	user = MYSQL.user,
-	password = MYSQL.pwd,
+	host = config.MYSQL.host,
+	port = config.MYSQL.port,
+	database = config.MYSQL.dbname,
+	user = config,MYSQL.user,
+	password = config.MYSQL.pwd,
 	max_packet_size = 10485760
 	})
 local result = {

@@ -1,5 +1,7 @@
+local config = require 'config'
+
 local file_id = ngx.var.arg_id or ''
-local save_path = TUKU.save_path
+local save_path = config.TUKU.save_path
 
 if file_id == '' then
 	ngx.print([[{"success": false, "errorMessage": "\u53c2\u6570\u51fa\u9519"}]])

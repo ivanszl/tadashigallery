@@ -1,6 +1,7 @@
+local cjson = require 'cjson'
+
 ngx.header['content-type'] = 'application/json'
 ngx.req.read_body()
-local cjson = require 'cjson'
 local args = ngx.req.get_post_args()
 local result = { success = true }
 if args.name == '' then
