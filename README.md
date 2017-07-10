@@ -107,7 +107,8 @@ server {
     error_log logs/tuku.error.log;
     root /var/www/html/tadashigallery;
     index index.html;
-    location ~ ^/(query|add_folder|file_upload|delete_file|rename).html$ {
+    set $project_config "default"; #设置项目配置名称，用来支持多个项目支持配置
+    location ~ ^/(query|add_folder|file_upload|delete_file|rename).html$ {
         default_type applcation/json;
         set $redirect_header 1;
         access_by_lua_file /var/www/html/tadashigallery/script/auth_check.lua; 
