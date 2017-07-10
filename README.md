@@ -237,21 +237,6 @@ define(function(require, exports, modules){
 });
 ```
 
-modify the script/init.lua file
-```lua
-MYSQL = {
-	host = '127.0.0.1',
-	port = 3306,
-	dbname = 'db_tuku',
-	user = 'test',
-	pwd = '123456'
-}
- 
-TUKU = {
-	user = 'tadashi', -- 登录用户名
-	password = 'tuku123456' -- 登录密码
-}
-```
 
 Auth
 ====
